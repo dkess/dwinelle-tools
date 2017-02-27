@@ -1,6 +1,3 @@
-# Takes a nodesfile and writes a list of time intervals during which new edges
-# were being explored.  Can be used as input for make_srt.py
-
 import json
 from sys import argv, exit
 

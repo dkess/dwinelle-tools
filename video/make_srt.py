@@ -1,22 +1,19 @@
-from sys import argv, exit
+from sys import exit, argv
 
-def millis_to_timecode(m):
-    m, millis = divmod(m, 1000)
-    m, seconds = divmod(m, 60)
-    hours, minutes = divmod(m, 60)
-    return '{:02}:{:02}:{:02},{:03}'.format(hours, minutes, seconds, millis)
+import utils
 
-if len(argv) != 4:
-    print('Usage: {} intervals offset length'.format(argv[0]))
-    exit(0)
+if len(argv) != 3 or argv[2] not in {'active', 'walking'}:
+    print('Usage: {} clipid [active|walking]')
 
-time_offset = int(argv[2])
-length = int(argv[3])
+clipid = argv[1]
 
-intervals = []
-for l in open(argv[1]):
-    a, b = map(int, l.rstrip().split(' '))
-    intervals.append((a - time_offset, b - time_offset))
+length = utils.get_length(clipid)
+
+if argv[2] == 'active':
+    intervals = utils.get_active_times(clipid=clipid)
+else:
+    intervals = utils.get_walking_times(clipid)
+intervals = [(i.starttime, i.endtime) for i in intervals]
 
 counter = 0
 def insert_subtitle(start, duration, txt, color):
@@ -26,8 +23,8 @@ def insert_subtitle(start, duration, txt, color):
     global counter
     counter += 1
     print(counter)
-    print('{} --> {}'.format(millis_to_timecode(start),
-                             millis_to_timecode(start + duration)))
+    print('{} --> {}'.format(utils.millis_to_timecode(start),
+                             utils.millis_to_timecode(start + duration)))
     print('<font color="{}">{}</font>'.format(color, txt))
     print()
 
