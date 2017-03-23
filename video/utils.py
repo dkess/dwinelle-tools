@@ -1,7 +1,10 @@
 from collections import defaultdict, deque, namedtuple
 from enum import IntEnum
+from itertools import chain
 import json
 from os import environ, path
+from pickle import load
+import re
 
 PATH = environ.get('NODESPATH', '')
 
@@ -22,6 +25,12 @@ class Direction(IntEnum):
 
     def letter(self):
         return DIRECTIONS[self.value]
+
+def edge(a: int, b: int):
+    if a < b:
+        return a, b
+    else:
+        return b, a
 
 def millis_to_timecode(m):
     m, millis = divmod(m, 1000)
@@ -225,10 +234,10 @@ def timestamp_from_video(clipid, millis):
     '''
     return get_offset(clipid) + millis
 
-def get_graph():
+def get_graph(rotate_dir=Direction.forward):
     j = load_nodes()
     
-    neighbors = [node['branches'] for node in j['nodes']]
+    neighbors = [{Direction[k] + rotate_dir: v for k, v in node['branches'].items()} for node in j['nodes']]
     
     # only contains keys (a,b) where a < b
     edgedata = defaultdict(lambda: {'rooms': [], 'distance': 0})
@@ -256,6 +265,33 @@ def get_graph():
             edgedata[k]['distance'] += (e.endtime - e.starttime) / 2
 
     return Graph(branches=neighbors, edgedata=edgedata)
+
+def get_node_coords(rotate_dir=Direction.forward):
+    g = get_graph().branches
+    node_lengths = load_edge_lengths()
+
+    hflip = False
+    hflip = -1 if hflip else 1
+
+    node_coords = {}
+    def dfs(v, x, y):
+        node_coords[v] = (x, y)
+        for d, n in g[v].items():
+            if n not in node_coords:
+                length = float(node_lengths[edge(v, n)])
+                d = d + rotate_dir
+                if d == Direction.forward:
+                    dfs(n, x, y + length)
+                elif d == Direction.right:
+                    dfs(n, x + hflip * length, y)
+                elif d == Direction.backward:
+                    dfs(n, x, y - length)
+                elif d == Direction.left:
+                    dfs(n, x - hflip * length, y)
+    
+    dfs(0, 0, 0)
+    
+    return node_coords
 
 def get_floors():
     g = get_graph()
@@ -293,6 +329,52 @@ def get_floors():
         floors.append((rooms, edges))
 
     return floors
+
+#  rotate cycle path such that it begins with the smallest node
+def rotate_to_smallest(path):
+    n = path.index(min(path))
+    return path[n:]+path[:n]
+
+def get_relationships(edgelist):
+    # check if there are any cycles at all
+    nv = len(set(chain.from_iterable(edgelist)))
+    ne = len(edgelist)
+
+    if ne == nv - 1:
+        return []
+
+    # First find all cycles in the graph.
+    # Adapted from http://stackoverflow.com/a/16558622
+    cycles = []
+
+    def findNewCycles(path):
+        start_node = path[0]
+        next_node = None
+        sub = []
+
+        for edge in edgelist:
+            node1, node2 = edge
+            if start_node in edge:
+                if node1 == start_node:
+                    next_node = node2
+                else:
+                    next_node = node1
+            if next_node not in path:
+                sub = [next_node]
+                sub.extend(path)
+                findNewCycles(sub)
+            elif len(path) > 2 and next_node == path[-1]:
+                p = rotate_to_smallest(path)
+                inv = rotate_to_smallest(p[::-1])
+                if p not in cycles and inv not in cycles:
+                    cycles.append(p)
+
+    for edge in edgelist:
+        for node in edge:
+            findNewCycles([node])
+
+    return cycles
+
 
 times = None
 timestamps_tree = None
@@ -345,3 +427,40 @@ def load_nodes():
 
     nodes = json.load(open(path.join(PATH, 'nodes.json')))
     return nodes
+
+edge_lengths = None
+def load_edge_lengths():
+    global edge_lengths
+
+    if edge_lengths:
+        return edge_lengths
+
+    edge_lengths = load(open(path.join(PATH, 'edge_lengths'), 'rb'))
+    return edge_lengths
+
+equal_edges = None
+def load_equal_edges():
+    global equal_edges
+
+    if equal_edges:
+        return equal_edges
+
+    equal_edges = []
+    edge_re = re.compile(r'(\-?)\(([0-9]+)[^0-9\)]+([0-9]+)\)')
+    for l in open(path.join(PATH, 'equal_edges')):
+        # strip comments
+        l = l.strip().split('#', 1)[0]
+
+        pos = []
+        neg = []
+        for m in edge_re.finditer(l):
+            sign, a, b = m.groups()
+            e = edge(int(a), int(b))
+            if sign == '-':
+                neg.append(e)
+            else:
+                pos.append(e)
+
+        equal_edges.append((pos, neg))
+
+    return equal_edges
