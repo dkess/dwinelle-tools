@@ -330,51 +330,11 @@ def get_floors():
 
     return floors
 
-#  rotate cycle path such that it begins with the smallest node
-def rotate_to_smallest(path):
-    n = path.index(min(path))
-    return path[n:]+path[:n]
+def edge_length_accuracy():
+    ed = get_graph().edgedata
+    el = load_edge_lengths()
 
-def get_relationships(edgelist):
-    # check if there are any cycles at all
-    nv = len(set(chain.from_iterable(edgelist)))
-    ne = len(edgelist)
-
-    if ne == nv - 1:
-        return []
-
-    # First find all cycles in the graph.
-    # Adapted from http://stackoverflow.com/a/16558622
-    cycles = []
-
-    def findNewCycles(path):
-        start_node = path[0]
-        next_node = None
-        sub = []
-
-        for edge in edgelist:
-            node1, node2 = edge
-            if start_node in edge:
-                if node1 == start_node:
-                    next_node = node2
-                else:
-                    next_node = node1
-            if next_node not in path:
-                sub = [next_node]
-                sub.extend(path)
-                findNewCycles(sub)
-            elif len(path) > 2 and next_node == path[-1]:
-                p = rotate_to_smallest(path)
-                inv = rotate_to_smallest(p[::-1])
-                if p not in cycles and inv not in cycles:
-                    cycles.append(p)
-
-    for edge in edgelist:
-        for node in edge:
-            findNewCycles([node])
-
-    return cycles
-
+    return sorted((abs(v - ed[k]['distance'])/ed[k]['distance'], k, v, ed[k]['distance']) for k, v in el.items())
 
 times = None
 timestamps_tree = None
