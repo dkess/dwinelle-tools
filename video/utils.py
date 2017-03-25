@@ -421,6 +421,7 @@ def load_equal_edges():
             else:
                 pos.append(e)
 
-        equal_edges.append((pos, neg))
+        if pos or neg:
+            equal_edges.append((frozenset(pos), frozenset(neg)))
 
     return equal_edges
