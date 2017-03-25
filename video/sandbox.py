@@ -16,9 +16,11 @@ if __name__ == '__main__':
                 a, b = map(int, s.strip().split())
                 e = utils.edge(a, b)
                 print(el[e])
+                '''
                 for le in chain(utils.get_entries_with_edge(a, b),
                                 utils.get_entries_with_edge(b, a)):
                     print(le)
+                '''
                 print(ed[e])
         except (IndexError, KeyError) as e:
             print('err')
