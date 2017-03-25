@@ -89,7 +89,6 @@ def update_pos(d, e):
         except KeyError:
             cur_x_neg.add(e)
 
-#positions: Dict[int, Dict[int, FrozenGraphPoint]] = {}
 positions: Dict[Edge, FrozenGraphPoint] = {}
 current_position = GraphPoint()
 def dfs(before: int, v: int):
@@ -120,10 +119,11 @@ for (n, _), p in positions.items():
     equal_pos[n].append(p)
 
 #equal_pos = [v for v in equal_pos.values() if len(v) > 1]
-rows: List[Tuple[List[Edge], List[Edge]]] = utils.load_equal_edges()[:]
+rows: List[Tuple[FrozenSet[Edge], FrozenSet[Edge]]] = utils.load_equal_edges()[:]
 
-tracked_edges: Set[Edge] = set(chain.from_iterable(pos + neg for pos, neg in rows))
+tracked_edges: Set[Edge] = set(chain.from_iterable(chain(pos, neg) for pos, neg in rows))
 
+rowdata = []
 for v in equal_pos.values():
     if len(v) > 1:
         start = v[0]
@@ -139,6 +139,8 @@ for v in equal_pos.values():
                 print('something is wrong!!!')
 
             tracked_edges.update(y_pos, y_neg, x_pos, x_neg)
+
+            rowdata.append(((x_pos, x_neg), (y_pos, y_neg), (start, entry)))
 
             rows.append((y_pos, y_neg))
             rows.append((x_pos, x_neg))
@@ -157,31 +159,36 @@ def matrix_item(row, col):
 
 the_matrix = Matrix(len(rows), len(tracked_edges), matrix_item)
 
-'''
-subspace = GramSchmidt(the_matrix.nullspace(), True)
+# some convenience API functions
+def get_rows(with_edge=None):
+    if with_edge:
+        return [r for r in rows if with_edge in r[0] or with_edge in r[1]]
+    return rows
 
-# Get the measured edge lengths
-edge_lengths = {}
-measured = [None] * len(tracked_edges)
-for e, data in utils.get_graph().edgedata.items():
-    try:
-        if measured[edge_id[e]] == None:
-            measured[edge_id[e]] = data['distance']
-    except KeyError:
-        if e not in edge_lengths:
-            edge_lengths[e] = data['distance']
+if __name__ == '__main__':
+    subspace = GramSchmidt(the_matrix.nullspace(), True)
 
-if None in measured:
-    print('something went wrong!')
+    # Get the measured edge lengths
+    edge_lengths = {}
+    measured = [None] * len(tracked_edges)
+    for e, data in utils.get_graph().edgedata.items():
+        try:
+            if measured[edge_id[e]] == None:
+                measured[edge_id[e]] = data['distance']
+        except KeyError:
+            if e not in edge_lengths:
+                edge_lengths[e] = data['distance']
 
-# Do an orthogonal projection of measured onto the subspace
-measured = Matrix(measured)
-projected_vector = sum((w.dot(measured) * w for w in subspace),
-                       #zeros(len(tracked_edges), 1)).evalf()
-                       zeros(len(tracked_edges), 1))
+    if None in measured:
+        print('something went wrong!')
 
-for n, length in enumerate(projected_vector):
-    edge_lengths[tracked_edges[n]] = float(length.evalf())
+    # Do an orthogonal projection of measured onto the subspace
+    measured = Matrix(measured)
+    projected_vector = sum((w.dot(measured) * w for w in subspace),
+                           #zeros(len(tracked_edges), 1)).evalf()
+                           zeros(len(tracked_edges), 1))
 
-pickle.dump(edge_lengths, open(argv[1], 'wb'))
-'''
+    for n, length in enumerate(projected_vector):
+        edge_lengths[tracked_edges[n]] = float(length.evalf())
+
+    pickle.dump(edge_lengths, open(argv[1], 'wb'))
