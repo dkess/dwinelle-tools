@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from itertools import chain
 
 import utils
@@ -22,6 +24,7 @@ if __name__ == '__main__':
                     print(le)
                 '''
                 print(ed[e])
+                print(next(k for k, v in g[a].items() if v == b))
         except (IndexError, KeyError) as e:
             print('err')
 

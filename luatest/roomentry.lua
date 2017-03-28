@@ -22,4 +22,4 @@ function ypress()
    end
 end
 
-mp.add_key_binding('y', ypress)
+mp.add_key_binding('i', ypress)

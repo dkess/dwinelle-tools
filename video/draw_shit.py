@@ -1,4 +1,8 @@
+#!/usr/bin/env python3
+
+from enum import Enum
 from itertools import chain
+from sys import argv
 import turtle
 
 import utils
@@ -9,12 +13,29 @@ def edge(a: int, b: int):
     else:
         return (a, b)
 
-SHRINK = 70
+SHRINK = 85
 X_OFFSET = 800
-Y_OFFSET = 0
+Y_OFFSET = 100
 
 graph = utils.get_graph().branches
-full_floors = [(r, e) for r, e in utils.get_floors() if len(r) > 0]
+
+class Mode(Enum):
+    floors = 0
+    equals = 1
+
+mode: Mode = Mode.floors
+current_floor: int = 0
+if len(argv) >= 2:
+    mode = Mode[argv[1]]
+    if len(argv) >= 3:
+        current_floor = int(argv[2])
+    
+if mode == Mode.floors:
+    full_floors = [(r, (e, [])) for r, e in utils.get_floors() if len(r) > 0]
+elif mode == Mode.equals:
+    import equations
+    full_floors = list(enumerate(equations.get_rows()))
+
 edge_lengths = utils.load_edge_lengths()
 
 empty_edges = set(chain.from_iterable(e for r, e in utils.get_floors() if len(e) == 0))
@@ -24,8 +45,7 @@ directions = {utils.Direction.forward: 90,
               utils.Direction.backward: 270,
               utils.Direction.left: 180}
 
-current_floor = None
-def draw_floor(floornum):
+def draw_floor(floornum: int):
     global current_floor
     current_floor = floornum
 
@@ -34,13 +54,16 @@ def draw_floor(floornum):
     if floornum == len(full_floors):
         rooms = []
         # All edges with rooms
-        edges = chain.from_iterable(edges for _, edges in full_floors)
+        print('Showing everything')
+        edges = chain.from_iterable(chain(((True, e) for e in edges[0]), ((False, e) for e in edges[1])) for _, edges in full_floors)
         # Edges with elevation changes
         #edges = set(chain.from_iterable((edge(v, n) for n in b.values() if set(['u', 'd']) & set(utils.get_graph().edgedata[edge(v, n)]['rooms'])) for v, b in enumerate(utils.get_graph().branches)))
         # All edges
         #...
     elif floornum >= 0 and floornum < len(full_floors):
         rooms, edges = full_floors[floornum]
+        print(edges)
+        edges = chain(((True, e) for e in edges[0]), ((False, e) for e in edges[1]))
         print(rooms)
     else:
         return
@@ -51,9 +74,9 @@ def draw_floor(floornum):
 
     written_nodes = set()
 
-    for a, b in edges:
+    for edge_dir, (a, b) in edges:
         turtle.penup()
-        x, y = node_coords[a]
+        x, y, _ = node_coords[a]
         turtle.goto(x / SHRINK + X_OFFSET, y / SHRINK + Y_OFFSET)
         if a not in written_nodes:
             turtle.write(a)
@@ -61,12 +84,18 @@ def draw_floor(floornum):
 
         turtle.pendown()
 
-        if edge_lengths[edge(a, b)] <= 0:
-            turtle.pencolor('red')
+        if edge_dir:
+            if edge_lengths[edge(a, b)] <= 0:
+                turtle.pencolor('red')
+            else:
+                turtle.pencolor('black')
         else:
-            turtle.pencolor('black')
+            if edge_lengths[edge(a, b)] <= 0:
+                turtle.pencolor('blue')
+            else:
+                turtle.pencolor('green')
 
-        x, y = node_coords[b]
+        x, y, _ = node_coords[b]
         turtle.goto(x / SHRINK + X_OFFSET, y / SHRINK + Y_OFFSET)
         turtle.pencolor('black')
         if b not in written_nodes:
@@ -77,14 +106,12 @@ def draw_floor(floornum):
     turtle.done()
 
 def next_floor(x, y):
-    print('got click event')
     draw_floor((current_floor + 1) % (len(full_floors) + 1))
 
 def prev_floor(x, y):
-    print('right click')
     draw_floor((current_floor - 1) % (len(full_floors) + 1))
 
 turtle.Screen().onclick(next_floor, 1)
 turtle.Screen().onclick(prev_floor, 3)
 
-draw_floor(0)
+draw_floor(current_floor)

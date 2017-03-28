@@ -266,30 +266,57 @@ def get_graph(rotate_dir=Direction.forward):
 
     return Graph(branches=neighbors, edgedata=edgedata)
 
+def get_edgerooms():
+    edgerooms = defaultdict(list)
+    tree = IntervalDict(((e.starttime, e.endtime), e)
+                        for e in get_logentries())
+
+    for clipid, rooms in load_roomsfiles().items():
+        for ts, name in rooms:
+            unixts = timestamp_from_video(clipid, ts)
+            entry = tree.get(unixts)
+            e = (entry.startnode, entry.endnode)
+            normalized_time = ((unixts - entry.starttime)
+                               / (entry.endtime - entry.starttime))
+            edgerooms[e].append((normalized_time, name, clipid, ts))
+
+    return edgerooms
+
 def get_node_coords(rotate_dir=Direction.forward):
     g = get_graph().branches
     node_lengths = load_edge_lengths()
+    edge_heights = load_edge_heights()
 
     hflip = False
     hflip = -1 if hflip else 1
 
     node_coords = {}
-    def dfs(v, x, y):
-        node_coords[v] = (x, y)
+    def dfs(v, x, y, z):
+        node_coords[v] = (x, y, z)
         for d, n in g[v].items():
             if n not in node_coords:
                 length = float(node_lengths[edge(v, n)])
+                if edge(v, n) in edge_heights:
+                    if v < n:
+                        s, e, h = edge_heights[(v, n)]
+                    else:
+                        s, e, h = edge_heights[(n, v)]
+                        h = -h
+                    if s > e:
+                        h = -h
+                else:
+                    h = 0
                 d = d + rotate_dir
                 if d == Direction.forward:
-                    dfs(n, x, y + length)
+                    dfs(n, x, y + length, z + h)
                 elif d == Direction.right:
-                    dfs(n, x + hflip * length, y)
+                    dfs(n, x + hflip * length, y, z + h)
                 elif d == Direction.backward:
-                    dfs(n, x, y - length)
+                    dfs(n, x, y - length, z + h)
                 elif d == Direction.left:
-                    dfs(n, x - hflip * length, y)
+                    dfs(n, x - hflip * length, y, z + h)
     
-    dfs(0, 0, 0)
+    dfs(0, 0, 0, 0)
     
     return node_coords
 
@@ -398,6 +425,19 @@ def load_edge_lengths():
     edge_lengths = load(open(path.join(PATH, 'edge_lengths'), 'rb'))
     return edge_lengths
 
+edge_heights = None
+def load_edge_heights():
+    global edge_heights
+
+    if edge_heights:
+        return edge_heights
+
+    try:
+        edge_heights = load(open(path.join(PATH, 'edge_heights'), 'rb'))
+    except FileNotFoundError:
+        edge_heights = {}
+    return edge_heights
+
 equal_edges = None
 def load_equal_edges():
     global equal_edges
@@ -425,3 +465,59 @@ def load_equal_edges():
             equal_edges.append((frozenset(pos), frozenset(neg)))
 
     return equal_edges
+
+equal_nodes = None
+def load_equal_nodes():
+    global equal_nodes
+
+    if equal_nodes:
+        return equal_nodes
+
+    equal_nodes = []
+    node_re = re.compile(r'[0-9]+')
+    equal_nodes = (
+        [int(s) for s in node_re.findall(l.strip().split('#', 1)[0])]
+        for l in open(path.join(PATH, 'equal_nodes')))
+    
+    equal_nodes = [e for e in equal_nodes if e]
+
+    return equal_nodes
+
+equal_heights = None
+def load_equal_heights():
+    global equal_heights
+
+    if equal_heights:
+        return equal_heights
+
+    equal_heights = []
+    node_re = re.compile(r'[0-9]+')
+    equal_heights = (
+        [int(s) for s in node_re.findall(l.strip().split('#', 1)[0])]
+        for l in open(path.join(PATH, 'equal_heights')))
+    
+    equal_heights = [e for e in equal_heights if e]
+
+    return equal_heights
+
+height_override = None
+def load_height_override():
+    global height_override
+
+    if height_override:
+        return height_override
+
+    height_override = {}
+    line_re = re.compile(r'\(([0-9]+)[^0-9\)]+([0-9]+)\)\s*([+-]?(?:[0-9]*[.])?[0-9]+)')
+    for l in open(path.join(PATH, 'height_override')):
+        # strip comments
+        l = l.strip().split('#', 1)[0]
+
+        m = line_re.match(l)
+        if m:
+            a, b, length = m.groups()
+            e = edge(int(a), int(b))
+
+            height_override[e] = float(length)
+
+    return height_override
