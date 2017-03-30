@@ -15,6 +15,13 @@ var MULTICHOICES = [{
 	disabled: false}
 ];
 
+function removeChildren(parent) {
+	while (parent.firstChild) {
+		parent.removeChild(parent.firstChild);
+	}
+}
+
+
 // Slight modification of https://github.com/mourner/tinyqueue
 function TinyQueue(data) {
     if (!(this instanceof TinyQueue)) return new TinyQueue(data);
@@ -345,10 +352,9 @@ function directionList(nodelist, startRoom, endRoom, endEdge) {
 					command = 'Go to ' + inGroup.exits[nodelist[i]];
 					var turnDir = getTurnDir(nodelist[i-1], nodelist[i], nodelist[i+1]);
 					command += ' and ' + lowerFirstCharCase(TURN_ENGLISH[turnDir]);
-					directions.push(nodelist[i]+' '+command);
+					directions.push(command);
 					inGroup = null;
 				} 
-				else {directions.push(nodelist[i]+' skip');}
 			} else {
 				var turnDir = getTurnDir(nodelist[i-1], nodelist[i], nodelist[i+1]);
 				var command = TURN_ENGLISH[turnDir];
@@ -369,7 +375,7 @@ function directionList(nodelist, startRoom, endRoom, endEdge) {
 					}
 				}
 
-				directions.push(nodelist[i]+' '+command);
+				directions.push(command);
 			}
 		}
 
@@ -391,8 +397,10 @@ function onChoiceChange() {
 	}
 
 	var foundPath = findPath(src, dst);
+	dlist = directionList(foundPath.path, src, dst, foundPath.endEdge);
 	console.log(directionList(foundPath.path, src, dst, foundPath.endEdge));
 	console.log(foundPath.path);
+	putDirections(dlist);
 }
 
 // sort the choices list to include bathrooms/main entrances first
@@ -434,6 +442,8 @@ window.onload = function() {
 	srcElem.addEventListener('change', onChoiceChange);
 	dstElem.addEventListener('change', onChoiceChange);
 
+	/*
+	// test cases
 	var src = 'east entrance';
 	var dst = 'common grounds';
 	var foundPath = findPath(src, dst);
@@ -445,4 +455,18 @@ window.onload = function() {
 	var foundPath = findPath(src, dst);
 	console.log(directionList(foundPath.path, src, dst, foundPath.endEdge));
 	console.log(foundPath.path);
+	*/
+}
+
+function putDirections(dirList) {
+	var ol = document.getElementById('directions-ol');
+	removeChildren(ol);
+
+	for (var i = 0; i < dirList.length; i++) {
+		var li = document.createElement('li');
+		li.className = 'direction';
+		li.appendChild(document.createTextNode(dirList[i]));
+
+		ol.appendChild(li);
+	}
 }
