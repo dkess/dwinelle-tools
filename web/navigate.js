@@ -1,5 +1,5 @@
-var MR = "Men's Restroom";
-var WR = "Women's Restroom";
+var MR = "Men's restroom";
+var WR = "Women's restroom";
 
 var SPECIAL_ROOMS = [MR, WR, 'Main entrance'];
 
@@ -400,7 +400,7 @@ function onChoiceChange() {
 	dlist = directionList(foundPath.path, src, dst, foundPath.endEdge);
 	console.log(directionList(foundPath.path, src, dst, foundPath.endEdge));
 	console.log(foundPath);
-	putDirections(dlist);
+	putDirections(dlist, foundPath.totalDist / 1000);
 
 	var startFrac = foundPath.startEdge.t;
 	if (foundPath.startEdge.b !== foundPath.path[0]) {
@@ -469,7 +469,11 @@ window.onload = function() {
 	*/
 }
 
-function putDirections(dirList) {
+function putDirections(dirList, eta) {
+	var span_eta = document.getElementById('eta');
+	removeChildren(span_eta);
+	span_eta.appendChild(document.createTextNode(Math.round(eta)));
+
 	var ol = document.getElementById('directions-ol');
 	removeChildren(ol);
 
@@ -480,4 +484,5 @@ function putDirections(dirList) {
 
 		ol.appendChild(li);
 	}
+	document.getElementById('directions').style.visibility = 'visible';
 }
