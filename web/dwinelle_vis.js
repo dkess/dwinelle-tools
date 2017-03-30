@@ -6,9 +6,10 @@ X_OFFSET=0;
 Y_OFFSET=-200;
 
 Z_SCALE=0.002;
+Z_OFFSET=-35;
 
 //var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
-var camera = new THREE.PerspectiveCamera(75, W/H, 0.1, 5000);
+var camera = new THREE.PerspectiveCamera(55, W/H, 0.1, 5000);
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(W, H);
 document.getElementById('vis').appendChild(renderer.domElement);
@@ -22,8 +23,8 @@ var faded = new THREE.LineBasicMaterial({color: 0xbfbfbf});
 
 function makeLine(ax, ay, az, bx, by, bz, m) {
     var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(ax/SHRINK + X_OFFSET, az * Z_SCALE, -(ay / SHRINK + Y_OFFSET)));
-    geometry.vertices.push(new THREE.Vector3(bx/SHRINK + X_OFFSET, bz * Z_SCALE, -(by / SHRINK + Y_OFFSET)));
+    geometry.vertices.push(new THREE.Vector3(ax/SHRINK + X_OFFSET, az * Z_SCALE + Z_OFFSET, -(ay / SHRINK + Y_OFFSET)));
+    geometry.vertices.push(new THREE.Vector3(bx/SHRINK + X_OFFSET, bz * Z_SCALE + Z_OFFSET, -(by / SHRINK + Y_OFFSET)));
 
     return new THREE.Line(geometry, m);
 }
@@ -91,3 +92,15 @@ function render() {
 }
 
 animate();
+
+function onWindowResize() {
+    var container = document.getElementById('vis');
+    var width = container.clientWidth;
+    var height = container.clientHeight;
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+}
+
+window.addEventListener('resize', onWindowResize, false);
+onWindowResize();

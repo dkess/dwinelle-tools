@@ -166,7 +166,7 @@ for (var i = 0; i < GROUPS.length; i++) {
     }
 }
 
-ROOMCHOICHES = [{value: '', label: '', selected: true, disabled: true}];
+ROOMCHOICHES = [];
 ROOMEDGE = {};
 for (var k in EDGEROOMS) {
     if (EDGEROOMS.hasOwnProperty(k)) {
@@ -419,10 +419,10 @@ function onChoiceChange() {
 // sort the choices list to include bathrooms/main entrances first
 function sortChoices(a, b) {
     // makes sure the empty one goes on bottom
-    if (!a.label) {
+    if (!a.value) {
 	return 1;
     }
-    if (!b.label) {
+    if (!b.value) {
 	return -1;
     }
 
@@ -442,14 +442,16 @@ function sortChoices(a, b) {
     return bpos - apos;
 }
 
+SRCDEFAULT = [{value: '', label: 'Select a starting point...', selected: true, disabled: true}];
+DSTDEFAULT = [{value: '', label: 'Select a destination...', selected: true, disabled: true}];
 window.onload = function() {
     var srcElem = document.getElementById('src');
     var dstElem = document.getElementById('dst');
     srcChoice = new Choices(srcElem, {
-	choices: ROOMCHOICHES,
+	choices: ROOMCHOICHES.concat(SRCDEFAULT),
 	sortFilter: sortChoices})
     dstChoice = new Choices(dstElem, {
-	choices: ROOMCHOICHES.concat(MULTICHOICES),
+	choices: ROOMCHOICHES.concat(DSTDEFAULT).concat(MULTICHOICES),
 	sortFilter: sortChoices})
 
     srcElem.addEventListener('change', onChoiceChange);
