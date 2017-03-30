@@ -405,7 +405,7 @@ function onChoiceChange() {
     putDirections(dlist, foundPath.totalDist / 1000);
 
     var startFrac = foundPath.startEdge.t;
-    if (foundPath.startEdge.b !== foundPath.path[0]) {
+    if (foundPath.startEdge.a !== foundPath.path[0]) {
 	startFrac = 1 - startFrac;
     }
 

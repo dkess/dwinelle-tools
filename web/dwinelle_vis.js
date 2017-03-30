@@ -60,9 +60,9 @@ function genScene(path, startFrac, endFrac) {
 	    } else if (ai === path.length - 1) {
 		splitLine(scene, ap, bp, endFrac, faded, hilight);
 	    } else if (bi === 0) {
-		splitLine(scene, ap, bp, startFrac, hilight, faded);
+		splitLine(scene, ap, bp, 1 - startFrac, hilight, faded);
 	    } else if (bi === path.length - 1) {
-		splitLine(scene, ap, bp, endFrac, hilight, faded);
+		splitLine(scene, ap, bp, 1 - endFrac, hilight, faded);
 	    } else {
 		scene.add(makeLine(ap.x, ap.y, ap.z, bp.x, bp.y, bp.z, hilight));
 	    }
