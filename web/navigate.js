@@ -320,7 +320,7 @@ function findPath(startRoom, endRoom) {
 		}
 	}
 
-	return {path: path.reverse(), totalDist: totalDist, endEdge: endEdge};
+	return {path: path.reverse(), totalDist: totalDist, startEdge: start_edge, endEdge: endEdge};
 }
 
 // skip groups?
@@ -399,8 +399,19 @@ function onChoiceChange() {
 	var foundPath = findPath(src, dst);
 	dlist = directionList(foundPath.path, src, dst, foundPath.endEdge);
 	console.log(directionList(foundPath.path, src, dst, foundPath.endEdge));
-	console.log(foundPath.path);
+	console.log(foundPath);
 	putDirections(dlist);
+
+	var startFrac = foundPath.startEdge.t;
+	if (foundPath.startEdge.b !== foundPath.path[0]) {
+		startFrac = 1 - startFrac;
+	}
+
+	var endFrac = foundPath.endEdge.t;
+	if (foundPath.endEdge.a !== foundPath.path[foundPath.path.length - 1]) {
+		endFrac = 1 - endFrac;
+	}
+	genScene(foundPath.path, startFrac, endFrac);
 }
 
 // sort the choices list to include bathrooms/main entrances first

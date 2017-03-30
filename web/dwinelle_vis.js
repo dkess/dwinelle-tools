@@ -16,42 +16,69 @@ document.getElementById('vis').appendChild(renderer.domElement);
 camera.position.set(0, 0, 400);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-var scene = new THREE.Scene();
-scene.background = new THREE.Color( 0xffffff );
+var material = new THREE.LineBasicMaterial({color: 0x000000});
+var hilight = new THREE.LineBasicMaterial({color: 0x0000ff});
+var faded = new THREE.LineBasicMaterial({color: 0xbfbfbf});
 
-var material = new THREE.LineBasicMaterial({ color: 0x000000 });
-var material_red = new THREE.LineBasicMaterial({ color: 0xff0000 });
-
-for (var edge_str in el) {
-    var s = edge_str.split(' ');
-    var a = parseInt(s[0], 10);
-    var b = parseInt(s[1], 10);
-
+function makeLine(ax, ay, az, bx, by, bz, m) {
     var geometry = new THREE.Geometry();
-    var ap = coords[a];
-    var bp = coords[b];
-    geometry.vertices.push(new THREE.Vector3(ap.x/SHRINK + X_OFFSET, ap.z * Z_SCALE, -(ap.y / SHRINK + Y_OFFSET)));
-    geometry.vertices.push(new THREE.Vector3(bp.x/SHRINK + X_OFFSET, bp.z * Z_SCALE, -(bp.y / SHRINK + Y_OFFSET)));
+    geometry.vertices.push(new THREE.Vector3(ax/SHRINK + X_OFFSET, az * Z_SCALE, -(ay / SHRINK + Y_OFFSET)));
+    geometry.vertices.push(new THREE.Vector3(bx/SHRINK + X_OFFSET, bz * Z_SCALE, -(by / SHRINK + Y_OFFSET)));
 
-    if (eh.hasOwnProperty(edge_str) && eh[edge_str].l < 0) {
-	var m = material_red;
-	console.log(edge_str);
-    } else {
-	var m = material;
-    }
-    var line = new THREE.Line(geometry, m);
-    scene.add(line);
+    return new THREE.Line(geometry, m);
 }
-/*
-var geometry = new THREE.Geometry();
-geometry.vertices.push(new THREE.Vector3(-10, 0, 0));
-geometry.vertices.push(new THREE.Vector3(10, 0, 0));
-var line = new THREE.Line(geometry, material);
 
-scene.add(line);
-*/
+function splitLine(scene, ap, bp, fraction, m1, m2) {
+    var mx = ap.x + fraction * (bp.x - ap.x);
+    var my = ap.y + fraction * (bp.y - ap.y);
+    var mz = ap.z + fraction * (bp.z - ap.z);
+
+    scene.add(makeLine(ap.x, ap.y, ap.z, mx, my, mz, m1));
+    scene.add(makeLine(mx, my, mz, bp.x, bp.y, bp.z, m2));
+}
+
+var scene = null
+function genScene(path, startFrac, endFrac) {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xffffff );
+
+    for (var edge_str in el) {
+	var s = edge_str.split(' ');
+	var a = parseInt(s[0], 10);
+	var b = parseInt(s[1], 10);
+
+	var ap = coords[a];
+	var bp = coords[b];
+
+	var ai = path.indexOf(a);
+	var bi = path.indexOf(b);
+
+	if (ai >= 0 && bi >= 0 && Math.abs(ai - bi) === 1) {
+	    if (ai === 0) {
+		splitLine(scene, ap, bp, startFrac, faded, hilight);
+	    } else if (ai === path.length - 1) {
+		splitLine(scene, ap, bp, endFrac, faded, hilight);
+	    } else if (bi === 0) {
+		splitLine(scene, ap, bp, startFrac, hilight, faded);
+	    } else if (bi === path.length - 1) {
+		splitLine(scene, ap, bp, endFrac, hilight, faded);
+	    } else {
+		scene.add(makeLine(ap.x, ap.y, ap.z, bp.x, bp.y, bp.z, hilight));
+	    }
+	} else {
+	    if (path.length === 0) {
+		var m = material;
+	    } else {
+		var m = faded;
+	    }
+	    var line = makeLine(ap.x, ap.y, ap.z, bp.x, bp.y, bp.z, m);
+	    scene.add(line);
+	}
+    }
+}
+genScene([], 0, 0);
+
 controls = new THREE.OrbitControls(camera, renderer.domElement);
-
 
 function animate() {
     requestAnimationFrame( animate );
