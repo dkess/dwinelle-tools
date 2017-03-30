@@ -14,7 +14,7 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize(W, H);
 document.getElementById('vis').appendChild(renderer.domElement);
 
-camera.position.set(0, 0, 400);
+camera.position.set(-300, 180, 180);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 var material = new THREE.LineBasicMaterial({color: 0x000000});
