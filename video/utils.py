@@ -137,7 +137,7 @@ class IntervalDict:
                 return on[1]
 
     def values(self):
-        '''Return an iterator through the dict's values, sorted by key.'''
+        '''Return an iterator over the dict's values, sorted by key.'''
         return (v for k, v in self.intervals)
 
 def get_walking_times(clipid):
@@ -521,3 +521,33 @@ def load_height_override():
             height_override[e] = float(length)
 
     return height_override
+
+groups = None
+def load_groups():
+    global groups
+
+    if groups:
+        return groups
+
+    groups = []
+
+    state = 0;
+    for l in chain(open(path.join(PATH, 'groups')), ['']):
+        l = l.strip()
+        if not l:
+            state = 0
+            if current_group:
+                groups.append(current_group)
+        elif state == 0:
+            current_group = {}
+            current_group['nodes'] = [int(x) for x in l.split()]
+            state += 1
+        elif state == 1:
+            current_group['name'] = l
+            state += 1
+            current_group['exits'] = {}
+        else:
+            n, name = l.split(' ', 1)
+            current_group['exits'][int(n)] = name
+
+    return groups
