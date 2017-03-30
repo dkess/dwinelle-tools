@@ -1,7 +1,7 @@
 var MR = "Men's Restroom";
 var WR = "Women's Restroom";
 
-var SPECIAL_ROOMS = [MR, WR, 'east entrance'];
+var SPECIAL_ROOMS = [MR, WR, 'Main entrance'];
 
 var MULTICHOICES = [{
 	value: MR,
