@@ -46,6 +46,10 @@ p {
 	min-height: 24px;
 }
 
+ol {
+	padding-left: 1.2em;
+}
+
 @media screen and (max-width: 750px) {
 	body {
 		margin-left: 1em;
