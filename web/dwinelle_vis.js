@@ -18,8 +18,10 @@ camera.position.set(-300, 180, 180);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 var material = new THREE.LineBasicMaterial({color: 0x000000});
-var hilight = new THREE.LineBasicMaterial({color: 0x0000ff});
+var hilight = new THREE.LineBasicMaterial({color: 0x0087C6});
 var faded = new THREE.LineBasicMaterial({color: 0xbfbfbf});
+var srcSphere = new THREE.MeshBasicMaterial({color: 0x157e2d});
+var dstSphere = new THREE.MeshBasicMaterial({color: 0x7e1515});
 
 function makeLine(ax, ay, az, bx, by, bz, m) {
     var geometry = new THREE.Geometry();
@@ -36,6 +38,17 @@ function splitLine(scene, ap, bp, fraction, m1, m2) {
 
     scene.add(makeLine(ap.x, ap.y, ap.z, mx, my, mz, m1));
     scene.add(makeLine(mx, my, mz, bp.x, bp.y, bp.z, m2));
+}
+
+function endSphere(ap, bp, fraction, m) {
+    var mx = ap.x + fraction * (bp.x - ap.x);
+    var my = ap.y + fraction * (bp.y - ap.y);
+    var mz = ap.z + fraction * (bp.z - ap.z);
+
+    var geometry = new THREE.SphereGeometry(2);
+    var sphere = new THREE.Mesh(geometry, m);
+    sphere.position.set(mx/SHRINK + X_OFFSET, mz * Z_SCALE + Z_OFFSET, -(my / SHRINK + Y_OFFSET));
+    return sphere;
 }
 
 var scene = null
@@ -57,12 +70,16 @@ function genScene(path, startFrac, endFrac) {
 	if (ai >= 0 && bi >= 0 && Math.abs(ai - bi) === 1) {
 	    if (ai === 0) {
 		splitLine(scene, ap, bp, startFrac, faded, hilight);
+		scene.add(endSphere(ap, bp, startFrac, srcSphere));
 	    } else if (ai === path.length - 1) {
 		splitLine(scene, ap, bp, endFrac, faded, hilight);
+		scene.add(endSphere(ap, bp, endFrac, dstSphere));
 	    } else if (bi === 0) {
 		splitLine(scene, ap, bp, 1 - startFrac, hilight, faded);
+		scene.add(endSphere(ap, bp, 1 - startFrac, srcSphere));
 	    } else if (bi === path.length - 1) {
 		splitLine(scene, ap, bp, 1 - endFrac, hilight, faded);
+		scene.add(endSphere(ap, bp, 1 - endFrac, dstSphere));
 	    } else {
 		scene.add(makeLine(ap.x, ap.y, ap.z, bp.x, bp.y, bp.z, hilight));
 	    }
