@@ -205,11 +205,29 @@ var dstChoice = null;
 function findPath(startRoom, endRoom) {
     // Check if startRoom and endRoom are already on the same edge
     var start_edge = ROOMEDGE[startRoom][0];
-    var sortedStart = sortedEdge(start_edge);
+    var sortedStart = sortedEdge(start_edge.a, start_edge.b);
     var endRoomEdges = ROOMEDGE[endRoom];
     for (var i = 0; i < endRoomEdges.length; i++) {
 	if (sortedStart === sortedEdge(endRoomEdges[i].a, endRoomEdges[i].b)) {
-	    return [];
+	    var startT = start_edge.t;
+	    if (endRoomEdges[i].a === start_edge.a) {
+		var endT = endRoomEdges[i].t;
+	    } else {
+		var endT = 1 - endRoomEdges[i].t;
+	    }
+
+	    var totalDist = Math.abs(startT - endT) * start_edge.l;
+
+	    if (endT > startT) {
+		var path = [start_edge.a, start_edge.b];
+	    } else {
+		var path = [start_edge.b, start_edge.a];
+	    }
+
+	    return {path: path,
+		totalDist: totalDist,
+		startEdge: start_edge,
+		endEdge: endRoomEdges[i]};
 	}
     }
 

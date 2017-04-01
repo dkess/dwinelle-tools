@@ -40,6 +40,26 @@ function splitLine(scene, ap, bp, fraction, m1, m2) {
     scene.add(makeLine(mx, my, mz, bp.x, bp.y, bp.z, m2));
 }
 
+// needed when the source and destination are on the same edge
+function tripleSplit(scene, ap, bp, f1, f2, m1, m2) {
+    if (f1 > f2) {
+	var t = f1;
+	f1 = f2;
+	f2 = t;
+    }
+    var m1x = ap.x + f1 * (bp.x - ap.x);
+    var m1y = ap.y + f1 * (bp.y - ap.y);
+    var m1z = ap.z + f1 * (bp.z - ap.z);
+
+    var m2x = ap.x + f2 * (bp.x - ap.x);
+    var m2y = ap.y + f2 * (bp.y - ap.y);
+    var m2z = ap.z + f2 * (bp.z - ap.z);
+
+    scene.add(makeLine(ap.x, ap.y, ap.z, m1x, m1y, m1z, m1));
+    scene.add(makeLine(m1x, m1y, m1z, m2x, m2y, m2z, m2));
+    scene.add(makeLine(m2x, m2y, m2z, bp.x, bp.y, bp.z, m1));
+}
+
 function endSphere(ap, bp, fraction, m) {
     var mx = ap.x + fraction * (bp.x - ap.x);
     var my = ap.y + fraction * (bp.y - ap.y);
@@ -68,7 +88,13 @@ function genScene(path, startFrac, endFrac) {
 	var bi = path.indexOf(b);
 
 	if (ai >= 0 && bi >= 0 && Math.abs(ai - bi) === 1) {
-	    if (ai === 0) {
+	    if (path.length === 2) {
+		var sf = (bi === 0) ? 1 - startFrac : startFrac;
+		var ef = (bi === 1) ? 1 - endFrac : endFrac;
+		tripleSplit(scene, ap, bp, sf, ef, faded, hilight);
+		scene.add(endSphere(ap, bp, sf, srcSphere));
+		scene.add(endSphere(ap, bp, ef, dstSphere));
+	    } else if (ai === 0) {
 		splitLine(scene, ap, bp, startFrac, faded, hilight);
 		scene.add(endSphere(ap, bp, startFrac, srcSphere));
 	    } else if (ai === path.length - 1) {
