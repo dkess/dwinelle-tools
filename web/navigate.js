@@ -364,63 +364,64 @@ function findPath(startRoom, endRoom) {
 function directionList(nodelist, startRoom, endRoom, endEdge) {
     directions = [];
 
-    if (nodelist.length === 0) {
-	// do something
+    var inGroup = null;
+    if (NODEGROUP.hasOwnProperty(nodelist[0]) &&
+	NODEGROUP[nodelist[0]].nodes.indexOf(nodelist[1]) > -1) {
+	inGroup = NODEGROUP[nodelist[0]];
     } else {
-	var inGroup = null;
-	if (NODEGROUP.hasOwnProperty(nodelist[0]) &&
-	    NODEGROUP[nodelist[0]].nodes.indexOf(nodelist[1]) > -1) {
-	    inGroup = NODEGROUP[nodelist[0]];
-	} else {
-	    var start_edge = ROOMEDGE[startRoom][0];
-	    var d = 'left';
-	    if (start_edge.a === nodelist[0]) {
-		d = 'right';
-	    }
-	    directions.push('Face away from ' + startRoom + ', and turn ' + d);
-	}
-
-	for (var i = 1; i < nodelist.length - 1; i++) {
-	    if (inGroup) {
-		// check if we are leaving the node group at this point
-		if (i < nodelist.length - 1 && inGroup.exits.hasOwnProperty(nodelist[i])
-		    && inGroup.nodes.indexOf(nodelist[i+1]) < 0) {
-		    command = 'Go to ' + inGroup.exits[nodelist[i]];
-		    var turnDir = getTurnDir(nodelist[i-1], nodelist[i], nodelist[i+1]);
-		    command += ' and ' + lowerFirstCharCase(TURN_ENGLISH[turnDir]);
-		    directions.push(command);
-		    inGroup = null;
-		} 
-	    } else {
-		var turnDir = getTurnDir(nodelist[i-1], nodelist[i], nodelist[i+1]);
-		var command = TURN_ENGLISH[turnDir];
-
-		if (i < nodelist.length - 1 && NODEGROUP.hasOwnProperty(nodelist[i])) {
-		    if (NODEGROUP[nodelist[i]].nodes.indexOf(nodelist[i+1]) > -1) {
-			inGroup = NODEGROUP[nodelist[i]];
-			command += ' into ' + inGroup.name;
-		    } else {
-			command += ', passing ' + NODEGROUP[nodelist[i]].name;
-		    }
-		} else {
-		    // check if this is a "fork"
-		    if (GRAPH[nodelist[i]].length === 4) {
-			command += ' at the fork';
-		    } else if (GRAPH[nodelist[i]].length === 2) {
-			command += ' at the end of the hallway';
-		    }
-		}
-
-		directions.push(command);
-	    }
-	}
-
+	var start_edge = ROOMEDGE[startRoom][0];
 	var d = 'left';
-	if (endEdge.b === nodelist[nodelist.length - 1]) {
-	    var d = 'right';
+	if (start_edge.a === nodelist[0]) {
+	    d = 'right';
 	}
-	directions.push('Enter ' + endRoom + ' on your ' + d);
+	directions.push('Face away from ' + startRoom + ', and turn ' + d);
     }
+
+    for (var i = 1; i < nodelist.length - 1; i++) {
+	if (inGroup) {
+	    // check if we are leaving the node group at this point
+	    if (i < nodelist.length - 1
+		    && inGroup.exits.hasOwnProperty(nodelist[i])
+		    && inGroup.nodes.indexOf(nodelist[i+1]) < 0) {
+		command = 'Go to ' + inGroup.exits[nodelist[i]];
+		var turnDir = getTurnDir(nodelist[i-1],
+		    nodelist[i],
+		    nodelist[i+1]);
+		command += ' and ' + lowerFirstCharCase(TURN_ENGLISH[turnDir]);
+		directions.push(command);
+		inGroup = null;
+	    } 
+	} else {
+	    var turnDir = getTurnDir(nodelist[i-1], nodelist[i], nodelist[i+1]);
+	    var command = TURN_ENGLISH[turnDir];
+
+	    if (i < nodelist.length - 1
+		    && NODEGROUP.hasOwnProperty(nodelist[i])) {
+		if (NODEGROUP[nodelist[i]].nodes.indexOf(nodelist[i+1]) > -1) {
+		    inGroup = NODEGROUP[nodelist[i]];
+		    command += ' into ' + inGroup.name;
+		} else {
+		    command += ', passing ' + NODEGROUP[nodelist[i]].name;
+		}
+	    } else {
+		// check if this is a "fork"
+		if (GRAPH[nodelist[i]].length === 4) {
+		    command += ' at the fork';
+		} else if (GRAPH[nodelist[i]].length === 2) {
+		    command += ' at the end of the hallway';
+		}
+	    }
+
+	    directions.push(command);
+	}
+    }
+
+    var d = 'left';
+    if (endEdge.b === nodelist[nodelist.length - 1]) {
+	var d = 'right';
+    }
+    directions.push('Enter ' + endRoom + ' on your ' + d);
+
     return directions;
 }
 
@@ -528,21 +529,6 @@ window.onload = function() {
 	    onChoiceChange();
 	}
     };
-
-    /*
-    // test cases
-	var src = 'east entrance';
-	var dst = 'common grounds';
-	var foundPath = findPath(src, dst);
-	console.log(directionList(foundPath.path, src, dst, foundPath.endEdge));
-	console.log(foundPath.path);
-
-	var src = '105';
-	var dst = '7207';
-	var foundPath = findPath(src, dst);
-	console.log(directionList(foundPath.path, src, dst, foundPath.endEdge));
-	console.log(foundPath.path);
-	*/
 }
 
 function putDirections(dirList, eta) {
