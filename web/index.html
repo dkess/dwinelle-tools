@@ -20,8 +20,18 @@
 <div id="interface">
 <h1>Dwinelle Navigator</h1>
 <p>Warning: under construction!</p>
-<select id="src" placeholder="Enter starting point"></select>
-<select id="dst" placeholder="Enter destination"></select>
+<div id="controls">
+	<div id="dropdowns">
+		<select id="src" placeholder="Enter starting point"></select>
+		<select id="dst" placeholder="Enter destination"></select>
+	</div>
+	<div id="swapdiv">
+		<svg id="swapsvg" title="Swap source and destination" class="icon button" fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+			<path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/>
+			<path d="M0 0h24v24H0z" fill="none"/>
+		</svg>
+	</div>
+</div>
 
 <div id="directions">
 	Estimated walking time: <span id="eta"></span> seconds

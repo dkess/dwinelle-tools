@@ -479,9 +479,9 @@ function sortChoices(a, b) {
     return bpos - apos;
 }
 
-function findChoice(label) {
+function findChoice(value) {
     return function(c) {
-	return c.label === label;
+	return c.value === value;
     };
 }
 
@@ -514,6 +514,20 @@ window.onload = function() {
 
 	onChoiceChange();
     }
+
+    // swap button
+    document.getElementById('swapsvg').onclick = function() {
+	var src = srcChoice.getValue(true);
+	var dst = dstChoice.getValue(true);
+	console.log(src, dst);
+
+	if (dstChoice.presetChoices.some(findChoice(src))
+		&& srcChoice.presetChoices.some(findChoice(dst))) {
+	    srcChoice.setValueByChoice(dst);
+	    dstChoice.setValueByChoice(src);
+	    onChoiceChange();
+	}
+    };
 
     /*
     // test cases
