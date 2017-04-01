@@ -34,7 +34,7 @@ camera.position.set(-300, 180, 180);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 var material = new THREE.LineBasicMaterial({color: 0x000000});
-var hilight = new THREE.LineBasicMaterial({color: 0x0087C6});
+var hilight = new THREE.LineBasicMaterial({color: 0x0087C6, linewidth: 2});
 var faded = new THREE.LineBasicMaterial({color: 0xbfbfbf});
 var srcSphere = new THREE.MeshBasicMaterial({color: 0x157e2d});
 var dstSphere = new THREE.MeshBasicMaterial({color: 0x7e1515});
@@ -81,7 +81,7 @@ function endSphere(ap, bp, fraction, m) {
     var my = ap.y + fraction * (bp.y - ap.y);
     var mz = ap.z + fraction * (bp.z - ap.z);
 
-    var geometry = new THREE.SphereGeometry(2);
+    var geometry = new THREE.SphereGeometry(2.5);
     var sphere = new THREE.Mesh(geometry, m);
     sphere.position.set(mx/SHRINK + X_OFFSET, mz * Z_SCALE + Z_OFFSET, -(my / SHRINK + Y_OFFSET));
     return sphere;
