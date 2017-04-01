@@ -488,46 +488,6 @@ function findChoice(label) {
 SRCDEFAULT = [{value: '', label: 'Select a starting point...', selected: true, disabled: true}];
 DSTDEFAULT = [{value: '', label: 'Select a destination...', selected: true, disabled: true}];
 window.onload = function() {
-    var loadHash = false;
-    var hash = window.location.hash.substr(1);
-    if (hash) {
-	var chosenSrc = decodeURIComponent(hash.match(/(?:^|\&)src\=([^\&]+)/)[1]);
-	var chosenDst = decodeURIComponent(hash.match(/(?:^|\&)dst\=([^\&]+)/)[1]);
-
-	console.log(chosenSrc, chosenDst);
-
-	if (chosenSrc && chosenDst) {
-	    SRCDEFAULT = [];
-	    DSTDEFAULT = [];
-
-	    var si = ROOMCHOICHES.findIndex(findChoice(chosenSrc));
-	    var s = ROOMCHOICHES.splice(si, 1)[0];
-	    var newS = JSON.parse(JSON.stringify(s));
-	    newS.selected = true;
-	    SRCDEFAULT.push(newS);
-	    DSTDEFAULT.push(s);
-
-	    var searching = ROOMCHOICHES;
-	    var di = searching.findIndex(findChoice(chosenDst));
-	    var in_multi = false;
-	    if (di < 0) {
-		searching = MULTICHOICES;
-		in_multi = true;
-	    }
-	    var di = searching.findIndex(findChoice(chosenDst));
-	    var d = searching.splice(di, 1)[0];
-	    var newD = JSON.parse(JSON.stringify(d));
-	    console.log(newD);
-	    newD.selected = true;
-	    if (!in_multi) {
-		SRCDEFAULT.push(d);
-	    }
-	    DSTDEFAULT.push(newD);
-
-	    loadHash = true;
-	}
-    }
-
     var srcElem = document.getElementById('src');
     var dstElem = document.getElementById('dst');
     srcChoice = new Choices(srcElem, {
@@ -540,7 +500,18 @@ window.onload = function() {
     srcElem.addEventListener('change', onChoiceChange);
     dstElem.addEventListener('change', onChoiceChange);
 
-    if (loadHash) {
+    var hash = window.location.hash.substr(1);
+    if (hash) {
+	var chosenSrc = decodeURIComponent(hash.match(/(?:^|\&)src\=([^\&]+)/)[1]);
+	if (chosenSrc) {
+	    srcChoice.setValueByChoice(chosenSrc);
+	}
+
+	var chosenDst = decodeURIComponent(hash.match(/(?:^|\&)dst\=([^\&]+)/)[1]);
+	if (chosenDst) {
+	    dstChoice.setValueByChoice(chosenDst);
+	}
+
 	onChoiceChange();
     }
 
@@ -577,3 +548,4 @@ function putDirections(dirList, eta) {
     }
     document.getElementById('directions').style.visibility = 'visible';
 }
+// @license-end
