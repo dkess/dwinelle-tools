@@ -411,9 +411,6 @@ function directionList(nodelist, startRoom, endRoom, endEdge) {
         }
     }
 
-    console.log(nodelist);
-    console.log(onGroup);
-
     directions = [];
 
     if (!onGroup[0]) {
@@ -465,6 +462,22 @@ function directionList(nodelist, startRoom, endRoom, endEdge) {
                 command += ', passing ' + passing.name;
             } else if (GRAPH[nodelist[i]].length === 4) {
                 command += ' at the fork';
+            } else if (GRAPH[nodelist[i]].length === 3) {
+                var forkname = FORKS[nodelist[i]];
+                if (forkname && turnDir === 0) {
+                    for (var j = 0; j < 3; j++) {
+                        var turnDir = getTurnDir(GRAPH[nodelist[i]][j]);
+                        if (turnDir === 1 || turnDir === 3) {
+                            break;
+                        }
+                    }
+                    command += ', passing the ' + forkname + ' on your ';
+                    if (turnDir === 1) {
+                        command += 'left';
+                    } else {
+                        command += 'right';
+                    }
+                }
             } else if (GRAPH[nodelist[i]].length === 2) {
                 command += ' at the end of the hallway';
             }

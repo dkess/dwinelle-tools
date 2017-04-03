@@ -27,3 +27,4 @@ print('var EDGEROOMS = {{{}}};'.format(','.join(
 print ('var GRAPH = [{}];'.format(','.join('[{}]'.format(','.join(str(n) for n in branches.values())) for branches in utils.get_graph().branches)))
 print('var DIRECTIONS = {{{}}};'.format(','.join('"{} {}":{}'.format(v, n, d) for v, g in enumerate(utils.get_graph().branches) for d, n in g.items() if v < n)));
 print('var GROUPS = {};'.format(json.dumps(utils.load_groups())))
+print('var FORKS = {{{}}};'.format(','.join('{}:{}'.format(k, json.dumps(v)) for k, v in utils.load_forks().items())))

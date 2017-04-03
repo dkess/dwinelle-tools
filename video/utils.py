@@ -566,3 +566,17 @@ def load_groups():
             current_group['exits'][int(n)] = name
 
     return groups
+
+forks = None
+def load_forks():
+    global forks
+
+    if forks:
+        return forks
+
+    forks = {}
+    for l in open(path.join(PATH, 'forks')):
+        k, v = l.strip().split(' ', 1)
+        forks[int(k)] = v
+
+    return forks
