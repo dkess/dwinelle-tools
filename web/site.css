@@ -45,7 +45,12 @@ p {
 	width: 85%;
 }
 
+#clearbutton {
+	margin-top: 24px;
+}
+
 #directions {
+	margin-top: 1em;
 	visibility: hidden;
 }
 

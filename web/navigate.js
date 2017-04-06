@@ -501,6 +501,8 @@ function onChoiceChange() {
 
     if (!src || !dst) {
         genScene([]);
+        history.replaceState("", document.title, window.location.pathname
+            + window.location.search);
         return;
     }
 
@@ -600,6 +602,13 @@ window.onload = function() {
             onChoiceChange();
         }
     };
+
+    // clear button
+    document.getElementById('clearbutton').onclick = function() {
+        srcChoice.setValueByChoice('');
+        dstChoice.setValueByChoice('');
+        onChoiceChange();
+    }
 }
 
 function putDirections(dirList, eta) {
