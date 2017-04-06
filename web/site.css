@@ -30,6 +30,10 @@ p {
 	min-height: 24px;
 }
 
+input.choices__input {
+	font-size: 16px;
+}
+
 #controls {
 	display: flex;
 	align-items: center;
