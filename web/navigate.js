@@ -403,7 +403,7 @@ function directionList(nodelist, startRoom, endRoom, endEdge) {
                     toAdd = common[0];
                 }
 
-                if (!toAdd.type && toAdd.exits.hasOwnProperty(nodelist[i+1])) {
+                if (toAdd && !toAdd.type && toAdd.exits[nodelist[i+1]]) {
                     toAdd = null;
                 }
             }
