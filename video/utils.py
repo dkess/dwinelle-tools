@@ -437,7 +437,7 @@ def load_edge_lengths():
     if edge_lengths:
         return edge_lengths
 
-    edge_lengths = load(open(path.join(PATH, 'edge_lengths'), 'rb'))
+    edge_lengths = load(open(path.join(PATH, 'gen/edge_lengths.pkl'), 'rb'))
     return edge_lengths
 
 edge_heights = None
@@ -448,7 +448,7 @@ def load_edge_heights():
         return edge_heights
 
     try:
-        edge_heights = load(open(path.join(PATH, 'edge_heights'), 'rb'))
+        edge_heights = load(open(path.join(PATH, 'gen/edge_heights.pkl'), 'rb'))
     except FileNotFoundError:
         edge_heights = {}
     return edge_heights
