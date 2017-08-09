@@ -2,4 +2,4 @@ This is all of the code I wrote that was useful in creating Dwinelle Navigator. 
 
 To build the web interface, clone the repo, update submodules (`git submodule update --init --recursive`), and run `make`. Serve from the `web/` directory.
 
-All code is licensed under GPLv3.  The graph of Dwinelle, including the locations of rooms (soon to be uploaded), is licensed under the [Open Database License (ODbL)](http://opendatacommons.org/licenses/odbl/1.0/).
+All code is licensed under GPLv3.  The graph of Dwinelle, including the locations of rooms, is licensed under the [Open Database License (ODbL)](http://opendatacommons.org/licenses/odbl/1.0/).
